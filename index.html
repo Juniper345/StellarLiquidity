@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="icon.png">
+    <title>Liquidity Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #1d1d1d;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 8%;
+            flex-wrap: wrap;
+            /* Allows wrapping on smaller screens */
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30%;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            /* Space between boxes on smaller screens */
+        }
+
+        .box {
+            background-color: #2d2d2d;
+            border: 2px solid #00A7E1;
+            /* Blue border */
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .box p {
+            margin: 0;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .box #total-tvl,
+        .box #change,
+        .box #curve-dominance {
+            font-size: 22px;
+            /* Larger text for the values */
+            font-weight: bold;
+            color: #00A7E1;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            margin: 0 auto;
+        }
+
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .btn {
+            background-color: #2d2d2d;
+            color: white;
+            border: 2px solid #00A7E1;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+            margin: 5px;
+            width: 30%;
+            justify-content: center;
+            text-decoration: none;
+            /* Remove underline from link */
+        }
+
+        .btn img {
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .company-list {
+            width: 80%;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #2d2d2d;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 16px;
+        }
+
+        .company-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .company-list li {
+            background-color: #2d2d2d;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #00A7E1;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+        }
+
+        .company-list li span {
+            font-weight: bold;
+            color: #00A7E1;
+        }
+
+        /* Hover effect */
+        .btn:hover {
+            background-color: #0099b3;
+        }
+
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                /* Stack elements vertically */
+                align-items: center;
+            }
+
+            .info {
+                width: 80%;
+                /* Make the info section take more space */
+                margin-right: 0;
+                /* Remove the right margin */
+            }
+
+            .chart-container {
+                width: 80%;
+                /* Make the chart take more width */
+                margin-top: 20px;
+                /* Space between chart and boxes */
+            }
+
+            .btn {
+                width: 100%;
+                /* Make buttons full-width on small screens */
+                margin-bottom: 10px;
+            }
+
+            .progress-container {
+                width: 90%;
+                /* Make progress bar wider on mobile */
+            }
+        }
+
+        /* Sticky footer for buttons */
+        .button-container {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #1d1d1d;
+            padding: 10px 0;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .button-container {
+                flex-wrap: nowrap;
+                gap: 5px;
+                padding: 10px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 6px 8px;
+                width: 32%;
+                margin: 0;
+            }
+
+            .btn img {
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="margin-top: 50px;">Stellar Liquidity Tracker</h1>
+    <div class="container">
+        <div class="info">
+            <div class="box">
+                <p>Total Value Locked (USD)</p>
+                <p id="total-tvl">$0.00T</p>
+            </div>
+            <div class="box">
+                <p>Change (24h)</p>
+                <p id="change">0.00%</p>
+            </div>
+            <div class="box">
+                <p>Curve Dominance</p>
+                <p id="curve-dominance">0.00%</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="tvl-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Company List -->
+    <div class="company-list" style="margin-bottom: 100px;">
+        <h3>Companies in Liquidity Data</h3>
+        <ul id="company-list">
+            <!-- List items will be added dynamically here -->
+        </ul>
+    </div>
+
+    <div class="button-container">
+        <a class="btn" href="https://t.me/Stellar347" target="_blank">
+            <img src="telegram.webp" alt="Telegram Icon"> Telegram
+        </a>
+        <a class="btn" href="https://stellar.sui.li/xlmtreasury.com" target="_blank">
+            <img src="lock.webp" alt="Cors Icon"> Cors
+        </a>
+        <a class="btn"
+            href="https://lobstr.co/trade/XLMTREASURY:GDHSEOLHPLTNSCRCXOQWTJ3O53EFK63RT72EIKA5FVM5CXLJT5Q7CHBK"
+            target="_blank">
+            <img src="lobstr.png" alt="LObstr Icon"> LObstr Link
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Example liquidity data (in trillions)
+        const liquidityData = [
+            { date: 'Amazon', value: 2.016 }, 
+            { date: 'TSMC', value: 0.959 },
+            { date: 'Tesla', value: 0.955 },
+            { date: 'Nvidia', value: 2.793 },
+            { date: 'Microsoft', value: 3.234 },
+            { date: 'United States SRVW', value: 10.019 },
+            { date: 'United States SRVW', value: 10.039 },  
+            { date: 'Apple', value: 3.084 },
+            { date: 'Saudi Aramco', value: 1.625}, 
+            { date: 'Meta', value: 1.507 },  
+            { date: 'Berkshire', value: 1.164 },  
+            { date: 'Broadcom', value: 0.957 },
+            { date: 'TSMC', value: 0.929 },
+            { date: 'Tesla', value: 0.925 },
+            { date: 'United States SRVW', value: 12.059 },
+            { date: 'United States SRVW', value: 8.129 }, 
+            
+            // Additional Big Companies and SRVW entries
+    { date: 'Alphabet (Google)', value: 3.750 },
+    { date: 'Johnson & Johnson', value: 1.250 },
+    { date: 'Visa', value: 1.100 },
+    { date: 'JPMorgan Chase', value: 1.900 },
+    { date: 'ExxonMobil', value: 1.300 },
+    { date: 'United States SRVW', value: 9.450 },
+    { date: 'Walmart', value: 1.100 },
+    { date: 'Samsung', value: 2.000 },
+    { date: 'Procter & Gamble', value: 1.000 },
+    { date: 'Intel', value: 1.600 },
+    { date: 'United States SRVW', value: 11.300 },
+    { date: 'Pfizer', value: 1.100 },
+    { date: 'Chevron', value: 1.400 },
+    { date: 'Coca-Cola', value: 0.900 },
+    { date: 'Oracle', value: 1.000 },
+    { date: 'IBM', value: 1.200 },
+    { date: 'United States SRVW', value: 14.500 },
+    { date: 'AT&T', value: 0.850 },
+    { date: 'Nike', value: 0.800 },
+    { date: 'Disney', value: 1.100 },
+    { date: 'Sony', value: 1.200 },
+    { date: 'McDonald\'s', value: 0.950 },
+    { date: 'United States SRVW', value: 12.400 },
+    { date: 'Visa', value: 1.150 },
+    { date: 'Mastercard', value: 1.100 },
+    { date: 'United States SRVW', value: 8.750 },
+    { date: 'Salesforce', value: 1.300 },
+    { date: 'Netflix', value: 0.950 },
+    { date: 'United States SRVW', value: 9.200 },
+    { date: 'AbbVie', value: 1.050 },
+    { date: 'PepsiCo', value: 1.000 },
+        ];
+
+
+        // Calculate Total Value Locked (TVL) in trillions
+        const totalTVL = liquidityData.reduce((total, data) => total + data.value, 0);
+
+        // Calculate Change (24h) - Random for demo purposes
+        const change24h = (Math.random() * 5 - 2.5).toFixed(2);  // Random change between -2.5% and 2.5%
+
+        // Calculate Curve Dominance - Random value for demo purposes
+        const curveDominance = (Math.random() * 10).toFixed(2);  // Random dominance value between 0 and 10%
+
+        // Update the displayed values dynamically
+        document.getElementById('total-tvl').textContent = `$${totalTVL.toFixed(2)}T`;
+        document.getElementById('change').textContent = `${change24h}%`;
+        document.getElementById('curve-dominance').textContent = `${curveDominance}%`;
+
+        // Chart.js configuration for the TVL chart
+        const labels = liquidityData.map(data => data.date);
+        const dataValues = liquidityData.map(data => data.value);
+
+        const companyListElement = document.getElementById('company-list');
+        [...liquidityData].reverse().forEach(data => {
+    const listItem = document.createElement('li');
+    listItem.innerHTML = `${data.date} <span>$${data.value.toFixed(2)}T</span>`;
+    companyListElement.appendChild(listItem);
+});
+
+
+        const ctx = document.getElementById('tvl-chart').getContext('2d');
+        const tvlChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Value Locked (TVL) in Trillions',
+                    data: dataValues,
+                    borderColor: '#00A7E1',
+                    backgroundColor: 'rgba(0, 167, 225, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#00A7E1',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Companies',
+                            font: {
+                                weight: 'bold', // Make the x-axis title bold
+                                color: '#00A7E1' // Make the x-axis title blue
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'TVL (in Trillions)',
+                            font: {
+                                weight: 'bold', // Make the x-axis title bold
+                                color: '#00A7E1' // Make the x-axis title blue
+
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'nearest',
+                        intersect: false,
+                    }
+                }
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
